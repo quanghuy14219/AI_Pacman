@@ -295,14 +295,20 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        visitedCorners = [False, False, False, False]
+        # util.raiseNotDefined()
+        return (self.startingPosition, visitedCorners)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        if False in state[1]:
+            return False
+        else:
+            return True
 
     def getSuccessors(self, state):
         """
@@ -325,6 +331,18 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            x, y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            checkVisitedCorners = state[1].copy()
+            if not hitsWall:
+                nextNode = (nextx, nexty)
+                if nextNode in self.corners:
+                    cornerIndex = self.corners.index(nextNode)
+                    checkVisitedCorners[cornerIndex] = True
+                successorState = ((nextNode, checkVisitedCorners), action, 1)
+                successors.append(successorState)
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -360,7 +378,23 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    heuristic = 0
+    currentNode = state[0]
+    checkVisitedCorners = state[1].copy()
+    while False in checkVisitedCorners:
+        distances = []
+        for i in range(4):
+            if not checkVisitedCorners[i]:
+                dt = util.manhattanDistance(currentNode, corners[i])
+                distances += [dt]
+            else:
+                distances += [float("inf")]
+        minDistance = min(distances)
+        heuristic += minDistance
+        cornerIndex = distances.index(minDistance)
+        currentNode = corners[cornerIndex]
+        checkVisitedCorners[cornerIndex] = True
+    return heuristic # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
